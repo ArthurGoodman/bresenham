@@ -1,12 +1,47 @@
+#include <chrono>
 #include <cmath>
+#include <iostream>
+#include <thread>
 #include <GL/freeglut.h>
 
-const int width = 640, height = 480;
+int width = 640, height = 480;
 
 int x_center = 320, y_center = 240;
 int radius = 100;
 
 int win_id;
+
+using Vector2 = std::tuple<float, float>;
+
+Vector2 polarToCartesian(const Vector2 &v) {
+    float rho = std::get<0>(v);
+    float phi = std::get<1>(v);
+
+    return Vector2{ rho * cos(phi), rho * sin(phi) };
+}
+
+Vector2 cartesianToPolar(const Vector2 &v) {
+    float x = std::get<0>(v);
+    float y = std::get<1>(v);
+
+    return Vector2{ sqrt(x * x + y * y), atan2f(y, x) };
+}
+
+void printVector(const Vector2 &v) {
+    std::cout << "(" << std::get<0>(v) << ", " << std::get<1>(v) << ")";
+}
+
+void computeCoordinates(float x, float y) {
+    std::cout << "Polar: ";
+    Vector2 polar = cartesianToPolar(Vector2{ x, y });
+    printVector(polar);
+    std::cout << "\n";
+
+    std::cout << "Cartesian: ";
+    Vector2 cartesian = polarToCartesian(polar);
+    printVector(cartesian);
+    std::cout << "\n\n";
+}
 
 void keyboard(unsigned char key, int x, int y) {
     switch (key) {
@@ -31,6 +66,9 @@ void mouse(int button, int state, int x, int y) {
 
     radius = length(x_center, y_center, x, y);
 
+    if (state)
+        computeCoordinates(x - width / 2, y - height / 2);
+
     glutPostRedisplay();
 }
 
@@ -42,7 +80,7 @@ void passive_mouse(int x, int y) {
     glutPostRedisplay();
 }
 
-void draw_point(int x, int y) {
+void drawPoint(int x, int y) {
     glBegin(GL_POINTS);
     glVertex2i(x_center + x, y_center + y);
     glVertex2i(x_center + x, y_center - y);
@@ -55,14 +93,12 @@ void draw_point(int x, int y) {
     glEnd();
 }
 
-void display(void) {
-    glClear(GL_COLOR_BUFFER_BIT);
-
+void drawCircle() {
     int x, y;
     int p;
     x = 0;
     y = radius;
-    draw_point(x, y);
+    drawPoint(x, y);
 
     p = 1 - radius;
 
@@ -80,23 +116,43 @@ void display(void) {
             p = p + 2 * (x - y) + 1;
         }
 
-        draw_point(x, y);
+        drawPoint(x, y);
     }
+}
 
-    glFlush();
+void reshape(int w, int h) {
+    width = w;
+    height = h;
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(0, 0, width, height);
+    gluOrtho2D(0, width, 0, height);
+
+    glMatrixMode(GL_MODELVIEW);
+
+    glutPostRedisplay();
+}
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawCircle();
+    glutSwapBuffers();
 }
 
 void initialize() {
     glClearColor(1.0, 1.0, 1.0, 0);
     glColor3f(0.0, 0.0, 0.0);
-    gluOrtho2D(0, width, 0, height);
 }
 
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
 
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowPosition(0, 0);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+
+    glutInitWindowPosition(
+        (glutGet(GLUT_SCREEN_WIDTH) - width) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - height) / 2);
+
     glutInitWindowSize(width, height);
 
     win_id = glutCreateWindow("bresenham_circle");
@@ -104,6 +160,7 @@ int main(int argc, char **argv) {
     initialize();
 
     glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutPassiveMotionFunc(passive_mouse);
