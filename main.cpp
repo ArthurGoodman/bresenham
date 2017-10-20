@@ -71,7 +71,7 @@ void mouse(int button, int state, int x, int y) {
     glutPostRedisplay();
 }
 
-void passive_mouse(int x, int y) {
+void passiveMouse(int x, int y) {
     y = height - y;
 
     radius = length(x_center, y_center, x, y);
@@ -93,29 +93,18 @@ void drawPoint(int x, int y) {
 }
 
 void drawCircle() {
-    int x, y;
-    int p;
-    x = 0;
-    y = radius;
-    drawPoint(x, y);
+    int x = 0;
+    int y = radius;
 
-    p = 1 - radius;
+    int p = 3 - 2 * radius;
 
-    while (x < y) {
-        if (p < 0) {
-            x += 1;
-        } else {
-            x += 1;
-            y -= 1;
-        }
-
-        if (p < 0) {
-            p = p + 2 * x + 1;
-        } else {
-            p = p + 2 * (x - y) + 1;
-        }
-
+    while (y >= x) {
         drawPoint(x, y);
+
+        if (p < 0)
+            p += 4 * x++ + 6;
+        else
+            p += 4 * (x++ - y--) + 10;
     }
 }
 
@@ -162,7 +151,7 @@ int main(int argc, char **argv) {
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
-    glutPassiveMotionFunc(passive_mouse);
+    glutPassiveMotionFunc(passiveMouse);
 
     glutMainLoop();
 
