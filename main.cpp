@@ -1,7 +1,6 @@
-#include <chrono>
 #include <cmath>
 #include <iostream>
-#include <thread>
+#include <tuple>
 #include <GL/freeglut.h>
 
 int width = 640, height = 480;
