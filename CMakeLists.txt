@@ -1,25 +1,37 @@
 cmake_minimum_required(VERSION 3.0)
-project(bresenham_circle)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+project(bresenham)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_EXTENSIONS off)
 
-set(EXECUTABLE ${PROJECT_NAME})
+add_executable(circle
+    circle.cpp)
 
-find_package(GLUT REQUIRED)
-find_package(OpenGL REQUIRED)
+add_executable(line
+    line.cpp)
 
-add_executable(${EXECUTABLE}
-    main.cpp)
+if(WIN32)
+    add_library(freeglut STATIC IMPORTED)
+    include_directories(${CMAKE_SOURCE_DIR}/../freeglut/include)
+    set_property(TARGET freeglut
+        PROPERTY IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../freeglut/lib/freeglut.lib)
+    add_custom_command(TARGET circle POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/../freeglut/bin/freeglut.dll
+        $<TARGET_FILE_DIR:circle>)
 
-target_link_libraries(${EXECUTABLE}
+    set(GLUT_LIBRARIES freeglut)
+else()
+    find_package(GLUT REQUIRED)
+    find_package(OpenGL REQUIRED)
+endif()
+
+target_link_libraries(circle
     ${GLUT_LIBRARIES}
     ${OPENGL_LIBRARIES})
 
-add_custom_target(run
-    COMMAND ${EXECUTABLE}
-    DEPENDS ${EXECUTABLE}
-    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR})
+target_link_libraries(line
+    ${GLUT_LIBRARIES}
+    ${OPENGL_LIBRARIES})

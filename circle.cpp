@@ -66,7 +66,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 // Calculate the distance between two points: (x1, y1) and (x2, y2)
 int length(int x1, int y1, int x2, int y2) {
-    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    return (int)sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 // Handle mouse button press events
@@ -83,7 +83,7 @@ void mouse(int button, int state, int x, int y) {
 
     // Do coordinate conversion
     if (state)
-        computeCoordinates(x - width / 2, y - height / 2);
+        computeCoordinates((float)(x - width / 2), (float)(y - height / 2));
 
     // Redraw window
     glutPostRedisplay();
